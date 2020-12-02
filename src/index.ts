@@ -1,4 +1,6 @@
 import { Command, flags } from '@oclif/command';
+import boxen = require('boxen');
+import chalk = require('chalk');
 import * as fs from 'fs';
 import * as inquirer from 'inquirer';
 import { join } from 'path';
@@ -15,23 +17,14 @@ class AdventOfCode2020 extends Command {
     { name: 'day' }
   ];
 
-  async readInput(day: number): Promise<[ string, string ]> {
-    const inputPath = join(__dirname, 'inputs');
+  async readInput(day: number): Promise<string> {
+    const inputPath = join(__dirname, 'inputs', `day${ day }-puzzle.txt`);
 
-    const readFile = async (path: string): Promise<string> => {
-      const absolutePath = join(inputPath, path);
+    if (!fs.existsSync(inputPath)) {
+      return '';
+    }
 
-      if (!fs.existsSync(absolutePath)) {
-        return '';
-      }
-
-      return fs.promises.readFile(absolutePath, 'utf8');
-    };
-
-    return [
-      await readFile(`day${ day }-puzzle1.txt`),
-      await readFile(`day${ day }-puzzle2.txt`)
-    ];
+    return fs.promises.readFile(inputPath, 'utf8');
   }
 
   async solvePuzzle(day: number): Promise<void> {
@@ -44,19 +37,30 @@ class AdventOfCode2020 extends Command {
     }
 
     const { puzzle1, puzzle2 } = require(puzzlePath);
-    const [ firstInput, secondInput ] = await this.readInput(day);
+    const input = await this.readInput(day);
 
-    [ [puzzle1, firstInput], [puzzle2, secondInput] ].forEach(([puzzle, input], index: number): void => {
+    let output = '';
+
+    [ puzzle1, puzzle2 ].forEach((puzzle, index: number): void => {
       const startTime = Date.now();
       const result = puzzle(input);
       const endTime = Date.now();
-      const duration = (endTime - startTime) / 1_000.0;
+      const duration = (endTime - startTime);
 
-      console.log(`Puzzle ${ index + 1 } (${ duration }s)`);
-      console.log('');
-      console.log(result);
-      console.log('');
+      output += `\nPuzzle ${ index + 1 } (${ duration }ms)\n`;
+      output += `${ chalk.yellow.bold(result) }\n`;
     });
+
+    console.log(
+      boxen(
+        output,
+        {
+          align: 'center',
+          padding: 1,
+          margin: 1
+        }
+      )
+    );
   }
 
   async run() {
