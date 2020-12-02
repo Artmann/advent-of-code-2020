@@ -46,24 +46,17 @@ class AdventOfCode2020 extends Command {
     const { puzzle1, puzzle2 } = require(puzzlePath);
     const [ firstInput, secondInput ] = await this.readInput(day);
 
+    [ [puzzle1, firstInput], [puzzle2, secondInput] ].forEach(([puzzle, input], index: number): void => {
+      const startTime = Date.now();
+      const result = puzzle(input);
+      const endTime = Date.now();
+      const duration = (endTime - startTime) / 1_000.0;
 
-    if (puzzle1) {
-      console.log('Puzzle 1');
-
-      const result = await puzzle1(firstInput);
-
+      console.log(`Puzzle ${ index + 1 } (${ duration }s)`);
+      console.log('');
       console.log(result);
       console.log('');
-    }
-
-    if (puzzle2) {
-      console.log('Puzzle 2');
-
-      const result = await puzzle2(secondInput);
-
-      console.log(result);
-      console.log('');
-    }
+    });
   }
 
   async run() {
